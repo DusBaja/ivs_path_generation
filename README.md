@@ -137,10 +137,10 @@ data/treated/benchmark_test.npz
 
 ## Models
 
-All learned models operate on lower-dimensional representations of the implied-volatility surface. If \(X_t\) denotes the surface observed at date t, its latent representation is denoted by
-\[
-Z_t \in \mathbb{R}^d.
-\]
+All learned models operate on lower-dimensional representations of the implied-volatility surface. If $X_t$ denotes the surface observed at date t, its latent representation is denoted by
+$$
+Z_t \in \mathbb{R}^d
+$$
 The models differ primarily in **how the latent dynamics are represented and learned**. SBJTS models the latent trajectory through a controlled jump-diffusion, whereas Temporal Flow Matching learns the conditional distribution of the next latent increment. LightSB and Cont–Vuletić are kept as fixed comparison benchmarks.
 
 ---
