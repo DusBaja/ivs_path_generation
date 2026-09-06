@@ -369,64 +369,25 @@ Distributional fidelity is evaluated using **Wasserstein-2 ($W_2$) distances** a
 
 **Marginal diagnostic $W_2$:** For scalar diagnostics, the corresponding observations are pooled separately across the real and generated samples. If
 
-$$
-\widehat P=\frac{1}{N_r}\sum_{i=1}^{N_r}\delta_{x_i^{\mathrm{real}}},
-\qquad
-\widehat Q=\frac{1}{N_g}\sum_{j=1}^{N_g}\delta_{x_j^{\mathrm{gen}}},
-$$
+$$\widehat P=\frac{1}{N_r}\sum_{i=1}^{N_r}\delta_{x_i^{\mathrm{real}}},\qquad \widehat Q=\frac{1}{N_g}\sum_{j=1}^{N_g}\delta_{x_j^{\mathrm{gen}}},$$
 
 the empirical one-dimensional Wasserstein-2 distance is
 
-$$
-W_2(\widehat P,\widehat Q)
-=
-\left(
-\int_0^1
-\left|
-\widehat F_{\mathrm{real}}^{-1}(u)
--
-\widehat F_{\mathrm{gen}}^{-1}(u)
-\right|^2du
-\right)^{1/2}.
-$$
+$$W_2(\widehat P,\widehat Q)=\left(\int_0^1\left|\widehat F_{\mathrm{real}}^{-1}(u)-\widehat F_{\mathrm{gen}}^{-1}(u)\right|^2du\right)^{1/2}.$$
 
 This is computed for pooled **IV levels, daily IV increments, surface-step magnitudes, ATM IV, skew, and wing-spread/smile-shape proxies**. These metrics compare marginal feature distributions and do not preserve dependence across the IV grid or through time. In particular, we can also see it also as “Surface $W_2$” in commun plots, and **IV-level $W_2$** in the lastest.
 
 **Surface OT $W_2$:** To assess the joint distribution of complete surfaces, each $16\times32$ IV surface is vectorized as
 
-$$
-S=\mathrm{vec}(\sigma)\in\mathbb R^{512}.
-$$
+$$S=\mathrm{vec}(\sigma)\in\mathbb R^{512}.$$
 
 The distance between one real surface $S_i^{\mathrm{real}}$ and one generated surface $S_j^{\mathrm{gen}}$ is measured by their Euclidean distance in this $512$-dimensional space, i.e its squared value is the sum of the squared IV differences over all maturity-moneyness grid points,
 
-$$
-\left\|
-S_i^{\mathrm{real}}-S_j^{\mathrm{gen}}
-\right\|_2^2
-=
-\sum_{k=1}^{512}
-\left(
-S_{i,k}^{\mathrm{real}}
--
-S_{j,k}^{\mathrm{gen}}
-\right)^2.
-$$
+$$\left\|S_i^{\mathrm{real}}-S_j^{\mathrm{gen}}\right\|_2^2=\sum_{k=1}^{512}\left(S_{i,k}^{\mathrm{real}}-S_{j,k}^{\mathrm{gen}}\right)^2.$$
 
 The Wasserstein distance does not compare surfaces one by one using an arbitrary pairing. Instead, it finds the optimal way of matching probability mass between the empirical real and generated surface distributions. If $\pi_{ij}$ denotes the amount of probability mass transported from real surface $i$ to generated surface $j$, then
 
-$$
-W_{2,\mathrm{surf}}^2
-=
-\min_{\pi\in\Pi(\widehat\mu_{\mathrm{real}},\widehat\mu_{\mathrm{gen}})}
-\sum_{i,j}
-\pi_{ij}
-\left\|
-S_i^{\mathrm{real}}
--
-S_j^{\mathrm{gen}}
-\right\|_2^2.
-$$
+$$W_{2,\mathrm{surf}}^2=\min_{\pi\in\Pi(\widehat\mu_{\mathrm{real}},\widehat\mu_{\mathrm{gen}})}\sum_{i,j}\pi_{ij}\left\|S_i^{\mathrm{real}}-S_j^{\mathrm{gen}}\right\|_2^2.$$
 
 Here, $\Pi(\widehat\mu_{\mathrm{real}},\widehat\mu_{\mathrm{gen}})$ is the set of all admissible matchings whose marginals are the empirical real and generated distributions. The optimization therefore selects the matching that minimizes the average squared discrepancy between complete surfaces.
 
