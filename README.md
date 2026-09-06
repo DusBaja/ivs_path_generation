@@ -173,7 +173,7 @@ This produces the chronological latent trajectory on which the SBJTS jump-diffus
 The purpose of this specification is to test whether a nonlinear, regularized latent representation improves path generation relative to the linear PCA representation while keeping the underlying SBJTS dynamics comparable.
 
 As for SBJTS-PCA, temporal conditioning is varied through
-$$\text{memory\_order} = L \qquad L \in \{2,3,5,10\}$$
+$$\mathrm{memory\_order} = L, \qquad L \in \{2,3,5,10\}$$
 
 ---
 
@@ -202,15 +202,7 @@ $$X_s=
 +
 \sin\left(\frac{\pi s}{2}\right)\Delta Z_t$$
 
-where \(\varepsilon\) is sampled from the reference noise distribution. The corresponding target velocity is
-
-$$u_s
-=
--\frac{\pi}{2}
-\sin\left(\frac{\pi s}{2}\right)\varepsilon
-+
-\frac{\pi}{2}
-\cos\left(\frac{\pi s}{2}\right)\Delta Z_t$$
+where $\varepsilon$ is sampled from the reference noise distribution. The corresponding target velocity is $$u_s=-\frac{\pi}{2}\sin\left(\frac{\pi s}{2}\right)\varepsilon+\frac{\pi}{2}\cos\left(\frac{\pi s}{2}\right)\Delta Z_t$$
 
 The conditional velocity field
 
@@ -222,7 +214,7 @@ At generation time, the resulting latent increment is applied recursively,
 
 $$Z_{t+1}=Z_t+\widehat{\Delta Z}_t,$$
 
-and the generated state \(Z_{t+1}\) is added to the conditioning history for the next transition. Repeating this procedure produces a complete multi-day latent trajectory
+and the generated state $Z_{t+1}$ is added to the conditioning history for the next transition. Repeating this procedure produces a complete multi-day latent trajectory
 
 $$(Z_{t+1},Z_{t+2},\ldots,Z_{t+H}),$$
 
@@ -235,7 +227,7 @@ TemporalFMConfig(context_lags=L)
 ```
 
 with $L \in \{1, 2, 3, 5, 10\}$.
-Here, \(t\) denotes chronological market time, whereas \(s\) is the artificial Flow-Matching interpolation time used to generate each latent transition.
+Here, $t$ denotes chronological market time, whereas $s$ is the artificial Flow-Matching interpolation time used to generate each latent transition.
 
 ---
 
@@ -249,19 +241,12 @@ src/volsurface_latentSB/lightsb_vol_surface_github_torchcompat.py
 
 LightSB is used as a lightweight continuous Schrödinger-bridge benchmark. In our implementation, it is applied in PCA latent space: each implied-volatility surface $X_t$ is first projected onto a low-dimensional representation,
 
-$$X_t \longmapsto Z_t \in \mathbb{R}^d.
-$$
+$$X_t \longmapsto Z_t \in \mathbb{R}^d.$$
 
 LightSB solves a classical Schrödinger Bridge with a Wiener reference process. Given two prescribed latent distributions $p_0$ and $p_1$, the bridge seeks a path measure $P^\star$ that remains close, in relative entropy, to the reference process while satisfying the endpoint
 constraints,
 
-$$
-P^\star
-\in
-\arg\min_{\substack{P\\P_0=p_0,\;P_1=p_1}}
-H(P\mid Q).
-$$
-
+$$P^\star \in \arg\min_{P:\,P_0=p_0,\,P_1=p_1} H(P\mid Q)$$
 Rather than learning the full path measure directly, LightSB exploits the equivalence between the dynamic Schrödinger Bridge and its static entropic optimal-transport formulation. It learns an approximation of the optimal endpoint coupling,
 
 $$
@@ -274,7 +259,7 @@ and intermediate latent states are generated according to the corresponding Brow
 
 Compared with SBJTS, LightSB therefore provides a simpler **continuous-diffusion Schrödinger-bridge reference**: it uses endpoint marginal constraints and a Wiener reference process, whereas SBJTS models the finite-dimensional joint law of the latent time series using a jump-diffusion construction.
 
-LightSB is a **fixed reference model** in the conditioning-lag ablation. It is not assigned a conditioning order \(L\); the same LightSB result is shown across lag dashboards solely to provide a common benchmark.
+LightSB is a **fixed reference model** in the conditioning-lag ablation. It is not assigned a conditioning order $L$; the same LightSB result is shown across lag dashboards solely to provide a common benchmark.
 
 ---
 
@@ -286,20 +271,17 @@ Implementation:
 src/other_models/cont_simulations.py
 ```
 
-The Cont–Vuletić benchmark follows the arbitrage-aware scenario-generation framework of Cont and Vuletić. Each implied-volatility surface \(X_t\) is first represented through a low-dimensional factor representation,
+The Cont–Vuletić benchmark follows the arbitrage-aware scenario-generation framework of Cont and Vuletić. Each implied-volatility surface X_t$ is first represented through a low-dimensional factor representation,
 
 $$
 X_t \longmapsto Z_t \in \mathbb{R}^d,
 $$
 
-where \(Z_t\) contains the factors used to describe the main variations of
-the volatility surface.
+where $Z_t$ contains the factors used to describe the main variations of the volatility surface.
 
 The temporal evolution of these factors is then modeled statistically to generate candidate latent trajectories,
 
-$$
-(Z_{t_1},\ldots,Z_{t_H}),
-$$
+$$(Z_{t_1},\ldots,Z_{t_H}),$$
 
 which are reconstructed into candidate implied-volatility-surface paths,
 
@@ -307,7 +289,7 @@ $$
 (X_{t_1},\ldots,X_{t_H}).
 $$
 
-The distinctive feature of the Cont–Vuletić approach is that static arbitrage is imposed at the **path-selection level**. For each candidate trajectory \(\omega_i\), a cumulative penalty
+The distinctive feature of the Cont–Vuletić approach is that static arbitrage is imposed at the **path-selection level**. For each candidate trajectory $\omega_i$, a cumulative penalty
 
 $$
 \phi(\omega_i)
@@ -316,17 +298,13 @@ $$
 measures the static-arbitrage violations encountered along the generated surface path. Candidate trajectories are then reweighted using a Weighted Monte Carlo procedure,
 
 $$
-w_i(\beta)
-=
-\frac{
-    \exp\left[-\beta\,\phi(\omega_i)\right]
-}{
+w_i(\beta)=\frac{
+    \exp\left[-\beta\,\phi(\omega_i)\right]}{
     \sum_j
-    \exp\left[-\beta\,\phi(\omega_j)\right]
-},
+    \exp\left[-\beta\,\phi(\omega_j)\right]},
 $$
 
-where \(\beta\geq0\) controls the strength of the arbitrage penalization. Paths with larger violations therefore receive smaller sampling weights, while paths with lower arbitrage penalties are favored.
+where $\beta\geq0$ controls the strength of the arbitrage penalization. Paths with larger violations therefore receive smaller sampling weights, while paths with lower arbitrage penalties are favored.
 
 The benchmark thus combines two components:
 
@@ -336,7 +314,7 @@ The benchmark thus combines two components:
 This makes the construction conceptually different from SBJTS and Temporal Flow Matching: the underlying dynamics first generate candidate paths,
 while financial consistency is subsequently introduced through the Weighted Monte Carlo distribution over those paths.
 
-Like LightSB, Cont–Vuletić is kept fixed in the conditioning-lag experiment and is not assigned an artificial conditioning order \(L\).
+Like LightSB, Cont–Vuletić is kept fixed in the conditioning-lag experiment and is not assigned an artificial conditioning order $L$.
 
 ---
 
@@ -358,7 +336,7 @@ candidate paths   : 500
 random seed       : 42
 ```
 
-The **conditioning lag** and **generation horizon** are distinct quantities. For example, \(L=10\) means that the model uses ten historical latent observations to condition each transition; it does not mean that the generated path must contain ten future dates.
+The **conditioning lag** and **generation horizon** are distinct quantities. For example, $L=10$ means that the model uses ten historical latent observations to condition each transition; it does not mean that the generated path must contain ten future dates.
 
 ---
 
