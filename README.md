@@ -164,7 +164,7 @@ src/volsurface_latentSB/sbjts_autoencoder_vol_surface.py
 ```
 
 SBJTS-VAE retains the same SBJTS temporal construction but replaces the linear PCA representation with a learned nonlinear variational latent space. The VAE associates each surface with a conditional latent distribution
-$$q_\phi(z\mid X)=\mathcal{N}\left(\mu_\phi(X),\operatorname{diag}\left(\sigma_\phi^2(X)\right)\right)$$
+$$q_\phi(z\mid X)=\mathcal{N}\left(\mu_\phi(X),\mathrm{diag}\left(\sigma_\phi^2(X)\right)\right)$$
 
 For the subsequent time-series model, the posterior mean is used as the deterministic latent representation, $$Z_t = \mu_\phi(X_t)$$
 
@@ -173,7 +173,7 @@ This produces the chronological latent trajectory on which the SBJTS jump-diffus
 The purpose of this specification is to test whether a nonlinear, regularized latent representation improves path generation relative to the linear PCA representation while keeping the underlying SBJTS dynamics comparable.
 
 As for SBJTS-PCA, temporal conditioning is varied through
-$$\texttt{memory\_order} = L \qquad L \in \{2,3,5,10\}$$
+$$\text{memory\_order} = L \qquad L \in \{2,3,5,10\}$$
 
 ---
 
@@ -417,7 +417,7 @@ This is computed for pooled **IV levels, daily IV increments, surface-step magni
 **Surface OT $W_2$:** To assess the joint distribution of complete surfaces, each $16\times32$ IV surface is vectorized as
 
 $$
-S=\operatorname{vec}(\sigma)\in\mathbb R^{512}.
+S=\mathrm{vec}(\sigma)\in\mathbb R^{512}.
 $$
 
 The distance between one real surface $S_i^{\mathrm{real}}$ and one generated surface $S_j^{\mathrm{gen}}$ is measured by their Euclidean distance in this $512$-dimensional space, i.e its squared value is the sum of the squared IV differences over all maturity-moneyness grid points,
@@ -457,24 +457,11 @@ Unlike IV-level $W_2$, which pools individual IV values, **Surface OT $W_2$ trea
 
 **PCA path OT $W_2$:** Temporal distributional fidelity is evaluated on complete five-day paths in a common PCA representation. A PCA basis with $d=8$ components is fitted on the real surfaces and applied unchanged to both real and generated data,
 
-$$
-Z_t
-=
-U_d^\top
-\left(
-\operatorname{vec}(S_t)-\bar S
-\right)
-\in\mathbb R^8.
-$$
+$$Z_t=U_d^\top\left(\mathrm{vec}(S_t)-\bar S\right)\in\mathbb R^8.$$
 
 Each five-day path is represented by the concatenated vector
 
-$$
-Y_t
-=
-\operatorname{vec}(Z_{t+1},\ldots,Z_{t+5})
-\in\mathbb R^{40},
-$$
+$$Y_t=\mathrm{vec}(Z_{t+1},\ldots,Z_{t+5})\in\mathbb R^{40},$$
 
 and $W_{2,\mathrm{path}}$ is computed between the empirical distributions of these path vectors. This provides a joint measure of **cross-sectional surface structure and temporal dependence across the full five-day horizon**, while avoiding optimal transport directly in the $5\times16\times32=2560$-dimensional raw path space.
 
