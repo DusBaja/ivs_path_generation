@@ -138,9 +138,7 @@ data/treated/benchmark_test.npz
 ## Models
 
 All learned models operate on lower-dimensional representations of the implied-volatility surface. If $X_t$ denotes the surface observed at date t, its latent representation is denoted by
-$$
-Z_t \in \mathbb{R}^d
-$$
+$$Z_t \in \mathbb{R}^d$$
 The models differ primarily in **how the latent dynamics are represented and learned**. SBJTS models the latent trajectory through a controlled jump-diffusion, whereas Temporal Flow Matching learns the conditional distribution of the next latent increment. LightSB and Cont–Vuletić are kept as fixed comparison benchmarks.
 
 ---
@@ -151,10 +149,8 @@ Implementation:
 ```text
 src/volsurface_latentSB/sbjts_pca_vol_surface.py
 ```
-SBJTS-PCA combines a linear PCA representation of the volatility surfacewith the Schrödinger Bridges with Jumps for Time Series (SBJTS)construction.
-Historical surfaces are first projected onto a d-dimensional PCA representation,
-$$X_t \rightarrow Z_t \in R^d$$
-The resulting chronological sequence $Z_{t_1},…,Z_{t_N}$ is treated as the observed latent time series. SBJTS constructs acontrolled jump-diffusion whose finite-dimensional law is fitted to thejoint distribution of the observed latent trajectory. The continuous component captures gradual latent movements, while the jump componentallows discontinuous changes in the surface dynamics. Temporal dependence is controlled through memory_order=L with $L \in \{1, 2, 3, 5, 10\}$.
+SBJTS-PCA combines a linear PCA representation of the volatility surfacewith the Schrödinger Bridges with Jumps for Time Series (SBJTS) construction. Historical surfaces are first projected onto a d-dimensional PCA representation, $$X_t \rightarrow Z_t \in R^d$$
+The resulting chronological sequence $Z_{t_1},…,Z_{t_N}$ is treated as the observed latent time series. SBJTS constructs acontrolled jump-diffusion whose finite-dimensional law is fitted to thejoint distribution of the observed latent trajectory. The continuous component captures gradual latent movements, while the jump componentallows discontinuous changes in the surface dynamics. Temporal dependence is controlled through **memory_order=L with $L \in \{1, 2, 3, 5, 10\}$**.
 Thus,  represents the amount of recent latent history used whenestimating the next transition; it is distinct from the length of thegenerated path. After simulation, generated latent states are mapped back through the PCA reconstruction to obtain full implied-volatility-surface trajectories.
 
 ---
@@ -168,26 +164,16 @@ src/volsurface_latentSB/sbjts_autoencoder_vol_surface.py
 ```
 
 SBJTS-VAE retains the same SBJTS temporal construction but replaces the linear PCA representation with a learned nonlinear variational latent space. The VAE associates each surface with a conditional latent distribution
-$$    q_\phi(z\mid X)
-    =
-    \mathcal{N}
-    \left(
-        \mu_\phi(X),
-        \operatorname{diag}\left(\sigma_\phi^2(X)\right)
-    \right)$$
+$$q_\phi(z\mid X)=\mathcal{N}\left(\mu_\phi(X),\operatorname{diag}\left(\sigma_\phi^2(X)\right)\right)$$
 
-For the subsequent time-series model, the posterior mean is used as the
-deterministic latent representation,
-$$Z_t = \mu_\phi(X_t)$$
+For the subsequent time-series model, the posterior mean is used as the deterministic latent representation, $$Z_t = \mu_\phi(X_t)$$
 
 This produces the chronological latent trajectory on which the SBJTS jump-diffusion is fitted. Generated latent paths are subsequently reconstructed through the learned decoder.
 
 The purpose of this specification is to test whether a nonlinear, regularized latent representation improves path generation relative to the linear PCA representation while keeping the underlying SBJTS dynamics comparable.
 
 As for SBJTS-PCA, temporal conditioning is varied through
-$$    \texttt{memory\_order} = L,
-    \qquad
-    L \in \{2,3,5,10\}$$
+$$\texttt{memory\_order} = L \qquad L \in \{2,3,5,10\}$$
 
 ---
 
@@ -200,70 +186,45 @@ src/volsurface_latentFM/ivs_autoencoder.py
 src/volsurface_latentFM/temporal_fm_trigo.py
 ```
 
-The Flow-Matching specification is formulated in a learned latent space. Each historical implied-volatility surface \(X_t\) is first mapped by the encoder \(E\) to a lower-dimensional latent representation
-
-$$
-Z_t = E(X_t) \in \mathbb{R}^d.
-$$
+The Flow-Matching specification is formulated in a learned latent space. Each historical implied-volatility surface $X_t$ is first mapped by the encoder $E$ to a lower-dimensional latent representation $$Z_t = E(X_t) \in \mathbb{R}^d$$
 
 Rather than modeling the surfaces independently, Temporal Flow Matching models the next latent increment
-
-$$
-\Delta Z_t = Z_{t+1} - Z_t
-$$
+$$\Delta Z_t = Z_{t+1} - Z_t$$
 
 conditional on the recent history of latent representations,
 
-$$
-C_t =
-\left(
-Z_{t-L+1},\ldots,Z_t
-\right).
-$$
+$$C_t =\left(Z_{t-L+1},\ldots,Z_t\right)$$
 
-For the artificial Flow-Matching time \(s\in[0,1]\), the final specification uses the trigonometric interpolation
+For the artificial Flow-Matching time $s\in[0,1]$, the final specification uses the trigonometric interpolation
 
-$$
-X_s
-=
+$$X_s=
 \cos\left(\frac{\pi s}{2}\right)\varepsilon
 +
-\sin\left(\frac{\pi s}{2}\right)\Delta Z_t,
-$$
+\sin\left(\frac{\pi s}{2}\right)\Delta Z_t$$
 
 where \(\varepsilon\) is sampled from the reference noise distribution. The corresponding target velocity is
 
-$$
-u_s
+$$u_s
 =
 -\frac{\pi}{2}
 \sin\left(\frac{\pi s}{2}\right)\varepsilon
 +
 \frac{\pi}{2}
-\cos\left(\frac{\pi s}{2}\right)\Delta Z_t.
-$$
+\cos\left(\frac{\pi s}{2}\right)\Delta Z_t$$
 
 The conditional velocity field
 
-$$
-v_\theta(X_s,s\mid C_t)
-$$
+$$v_\theta(X_s,s\mid C_t)$$
 
 is trained to transport the reference noise toward the distribution of latent increments conditional on the recent history.
 
 At generation time, the resulting latent increment is applied recursively,
 
-$$
-Z_{t+1}
-=
-Z_t+\widehat{\Delta Z}_t,
-$$
+$$Z_{t+1}=Z_t+\widehat{\Delta Z}_t,$$
 
 and the generated state \(Z_{t+1}\) is added to the conditioning history for the next transition. Repeating this procedure produces a complete multi-day latent trajectory
 
-$$
-(Z_{t+1},Z_{t+2},\ldots,Z_{t+H}),
-$$
+$$(Z_{t+1},Z_{t+2},\ldots,Z_{t+H}),$$
 
 which is subsequently reconstructed into a path of implied-volatility surfaces using the learned decoder.
 
@@ -286,13 +247,12 @@ Implementation:
 src/volsurface_latentSB/lightsb_vol_surface_github_torchcompat.py
 ```
 
-LightSB is used as a lightweight continuous Schrödinger-bridge benchmark. In our implementation, it is applied in PCA latent space: each implied-volatility surface \(X_t\) is first projected onto a low-dimensional representation,
+LightSB is used as a lightweight continuous Schrödinger-bridge benchmark. In our implementation, it is applied in PCA latent space: each implied-volatility surface $X_t$ is first projected onto a low-dimensional representation,
 
-$$
-X_t \longmapsto Z_t \in \mathbb{R}^d.
+$$X_t \longmapsto Z_t \in \mathbb{R}^d.
 $$
 
-LightSB solves a classical Schrödinger Bridge with a Wiener reference process. Given two prescribed latent distributions \(p_0\) and \(p_1\), the bridge seeks a path measure \(P^\star\) that remains close, in relative entropy, to the reference process while satisfying the endpoint
+LightSB solves a classical Schrödinger Bridge with a Wiener reference process. Given two prescribed latent distributions $p_0$ and $p_1$, the bridge seeks a path measure $P^\star$ that remains close, in relative entropy, to the reference process while satisfying the endpoint
 constraints,
 
 $$
